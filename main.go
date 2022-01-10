@@ -10,8 +10,6 @@ import (
 	"runtime"
 	"time"
 
-	//"strconv"
-	//"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -32,13 +30,15 @@ import (
 	//"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	erc721 "ETHCollectTrans/contracts/output/ERC721"
+	erc721 "CollectNFTDataETH/contracts/output/ERC721"
 
 	//erc1155 "ETHCollectTrans/contracts/output/ERC1155"
 
-	. "ETHCollectTrans/types"
+	. "CollectNFTDataETH/types"
 
-	logger "ETHCollectTrans/logger"
+	logger "CollectNFTDataETH/logger"
+
+	"CollectNFTDataETH/config"
 
 	"net/http"
 )
@@ -56,9 +56,21 @@ func main() {
 
 	flag.Parse()
 
+	configData, err := config.LoadConfigration("config.json")
+	if err != nil {
+		log.Fatal("LoadConfigration :", err)
+	}
+
+	url := configData.URL
 	logger.LoggerInit()
 
-	ethdial, err := ethclient.Dial("https://mainnet.infura.io/v3/d5b91468693a4125ae7acef61be52a52")
+	logOrderMatchedSigHash := common.HexToHash("0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9") //0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9 ordermatch
+
+	logTransferSigHash := common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") //0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer ERC 721 일때
+
+	logTransferSingleSigHash := common.HexToHash("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") //0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62 transferSingle  ERC1155 일때?
+
+	ethdial, err := ethclient.Dial(url)
 	if err != nil {
 		fmt.Println("ethclient.Dial error")
 		log.Fatal(err)
@@ -111,12 +123,6 @@ func main() {
 
 		blocktime := int64(block.Time())
 		blocktimestring := time.Unix(blocktime, 0).Format("2006-01-02 15:04:05")
-
-		logOrderMatchedSigHash := common.HexToHash("0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9") //0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9 ordermatch
-
-		logTransferSigHash := common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") //0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer ERC 721 일때
-
-		logTransferSingleSigHash := common.HexToHash("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62") //0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62 transferSingle  ERC1155 일때?
 
 		for _, txs := range block.Transactions() {
 
