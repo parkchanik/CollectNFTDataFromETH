@@ -1,0 +1,43 @@
+package types
+
+import (
+	//"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+)
+
+type Attribute struct {
+	Trait_type string
+	Value      string
+}
+
+type TokenMetaData struct {
+	Name     interface{}
+	Image    string
+	FileName string
+	//Attributes []Attribute
+}
+
+type TransferInfo struct {
+	Contractaddress string //common.Address
+	Topic_0         string // signature
+	Topic_1         string // from
+	Topic_2         string // to
+	Topic_3         string // token id
+}
+
+type TokenInfo struct {
+	ContractName    string
+	Symbol          string
+	Contractaddress string
+	TokenID         string
+	FileName        string
+}
+
+type LogData struct {
+	TransactionHash       common.Hash
+	BlockTime             string
+	EtherValue            int64
+	MatchContractsAddress common.Address
+	TokenInfos            []TokenInfo
+}

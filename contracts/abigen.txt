@@ -1,0 +1,6 @@
+solc --abi Store.sol
+solc --bin Store.sol
+..\abigen --bin=output/ERC721/ERC721.bin --abi=output/ERC721/ERC721.abi --pkg=erc721 --out=output/ERC721/ERC721.go
+
+..\abigen --bin=output/ERC1155/ERC1155.bin --abi=output/ERC1155/ERC1155.abi --pkg=erc1155 --out=output/ERC1155/ERC1155.go
+ 
