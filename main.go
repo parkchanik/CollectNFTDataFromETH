@@ -496,7 +496,19 @@ func getImageFromDataApplicationJson(tokenuri string) string {
 		return ""
 	}
 
-	logger.InfoLog("base64.StdEncoding.DecodeString  %s\n", tokenMetaData.Image)
+	imagearr := strings.Split(tokenMetaData.Image, ",")
+
+	// svg , base64 로 인코딩 되어있는 경우 svg 를 파일로
+	if imagearr[0] == "data:image/svg+xml;base64" {
+		imgdata, err := base64.StdEncoding.DecodeString(imagearr[1])
+		if err != nil {
+			logger.ErrorLog("base64.StdEncoding.DecodeString(imagearr Error : ", err)
+			return ""
+		}
+
+		logger.InfoLog("base64.StdEncoding.DecodeString  %s\n", imgdata)
+
+	}
 
 	return ""
 }
