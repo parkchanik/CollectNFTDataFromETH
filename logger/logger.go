@@ -20,10 +20,10 @@ func LoggerInit() {
 	var path string
 
 	if runtime.GOOS == "windows" {
-		path = "..\\TokenData\\"
+		path = "..\\CollectNFT\\TokenData\\"
 		fmt.Println("runtime.GOOS =", runtime.GOOS)
 	} else if runtime.GOOS == "linux" {
-		path = "../data/TokenData/"
+		path = "../CollectNFT/TokenData/"
 		fmt.Println("runtime.GOOS =", runtime.GOOS)
 	}
 	t := time.Now()

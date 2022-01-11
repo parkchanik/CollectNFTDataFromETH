@@ -47,6 +47,8 @@ import (
 
 var client *ethclient.Client = nil
 
+var IMAGE_PATH string = "../CollectNFT/Images/"
+
 func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -208,7 +210,13 @@ func main() {
 
 						if strings.Contains(tokenuri, "data:application/json") == true {
 
-							getImageFromDataApplicationJson(tokenuri)
+							filename := fmt.Sprintf("%s_%s.svg", strings.ReplaceAll(tokeninfo.ContractName, " ", "_"), tokeninfo.TokenID)
+							pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
+							result := getImageFromDataApplicationJson(tokenuri, pathandfilename)
+
+							if result == "OK" {
+								tokeninfo.FileName = filename
+							}
 
 						} else {
 
@@ -228,7 +236,7 @@ func main() {
 								logger.InfoLog("start download image uri : %s \n", imageuri)
 
 								filename := fmt.Sprintf("%s_%s.png", strings.ReplaceAll(tokeninfo.ContractName, " ", "_"), tokeninfo.TokenID)
-								pathandfilename := fmt.Sprintf("../Graph/NFTImages/%s", filename)
+								pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 
 								err = downloadFile(imageuri, pathandfilename)
 								if err != nil {
@@ -472,7 +480,7 @@ func getDataERC721(eventlog types.Log) (*TokenInfo, string, error) {
 
 }
 
-func getImageFromDataApplicationJson(tokenuri string) string {
+func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 	logger.InfoLog("------- tokenuri uri [%s]\n", "data:application/json........")
 
@@ -506,8 +514,25 @@ func getImageFromDataApplicationJson(tokenuri string) string {
 			return ""
 		}
 
-		logger.InfoLog("base64.StdEncoding.DecodeString  %s\n", imgdata)
+		//logger.InfoLog("base64.StdEncoding.DecodeString  %s\n", imgdata)
 
+		file, err := os.Create(pathandfilename)
+		if err != nil {
+			logger.ErrorLog("getImageFromDataApplicationJson os.Create Error : ", err)
+			return ""
+		}
+
+		defer file.Close()
+
+		cnt, err := file.WriteString(string(imgdata))
+		if err != nil {
+			logger.ErrorLog("getImageFromDataApplicationJson file.WriteString Error : ", err)
+			return ""
+		}
+
+		logger.InfoLog("file.WriteString cnt %d ", cnt)
+
+		return "OK"
 	}
 
 	return ""
