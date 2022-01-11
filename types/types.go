@@ -41,3 +41,13 @@ type LogData struct {
 	MatchContractsAddress common.Address
 	TokenInfos            []TokenInfo
 }
+
+type TokenMetaDataBase64 struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Image       string `json:"image"`
+	Attributes  []struct {
+		TraitType string `json:"trait_type"`
+		Value     string `json:"value"`
+	} `json:"attributes"`
+}

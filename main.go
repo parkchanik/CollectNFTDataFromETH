@@ -15,6 +15,8 @@ import (
 	"log"
 	"os"
 
+	"encoding/base64"
+
 	//"math"
 	//"encoding/hex"
 
@@ -93,8 +95,8 @@ func main() {
 	// block number 13330090 (Oct-01-2021 12:00:00 AM +UTC)
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
-	var fromBlockNumber int64 = 13330090 //13717846
-	var toBlockNumber int64 = 13527858
+	var fromBlockNumber int64 = 13355752 //13717846
+	var toBlockNumber int64 = 13355752
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -146,9 +148,9 @@ func main() {
 			// 아래는 테스트 트랜잭션만 처리 하기 위해 추가
 			// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
 			// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
-			// if txhash.Hex() != "0x409a5fd2f8cc979efea2a35f8af12f75730cc005a4cf7f7f94b7f56ffa9bd70b" {
-			// 	continue
-			// }
+			if txhash.Hex() != "0xb6cf45574456ce1037248c3dfcb744e25ebb572f89c95bcec095a3d056a3bcac" {
+				continue
+			}
 
 			transferSigCount := 0
 			orderMatchSig := 0
@@ -206,7 +208,7 @@ func main() {
 
 						if strings.Contains(tokenuri, "data:application/json") == true {
 
-							getImageFromDataApplicationJson()
+							getImageFromDataApplicationJson(tokenuri)
 
 						} else {
 
@@ -470,22 +472,33 @@ func getDataERC721(eventlog types.Log) (*TokenInfo, string, error) {
 
 }
 
-func getImageFromDataApplicationJson() {
+func getImageFromDataApplicationJson(tokenuri string) string {
 
 	logger.InfoLog("------- tokenuri uri [%s]\n", "data:application/json........")
 
-	//logger.InfoLog("token uri data:json : imageuri uri [%s]\n", tokenuri)
+	//logger.InfoLog("token uri data:json : imageuri uri %s\n", tokenuri)
 
-	//tokenuriarr := strings.Split(tokenuri, ",")
+	tokenuriarr := strings.Split(tokenuri, ",")
 
 	//logger.InfoLog("token uri data:json : imageuri tokenuriarr[1]  ---- uri [%s]\n", tokenuriarr[1])
 
-	// data, err := base64.StdEncoding.DecodeString(tokenuriarr[1])
-	// if err != nil {
-	// 	log.Fatal("error:", err)
-	// }
+	data, err := base64.StdEncoding.DecodeString(tokenuriarr[1])
+	if err != nil {
+		logger.ErrorLog(" tokenMetaData base64.StdEncoding.DecodeString Error : ", err)
+		return ""
+	}
 
-	//logger.InfoLog("base64.StdEncoding.DecodeString  [%s]\n", data)
+	tokenMetaData := TokenMetaDataBase64{}
+
+	err = json.Unmarshal(data, &tokenMetaData)
+	if err != nil {
+		logger.ErrorLog(" tokenMetaData base64 Unmarshal Error : ", err)
+		return ""
+	}
+
+	logger.InfoLog("base64.StdEncoding.DecodeString  %s\n", tokenMetaData.Image)
+
+	return ""
 }
 
 //if z.Topics[0] == logTransferSingleSigHash { // TransferSingle erc1155
