@@ -150,9 +150,9 @@ func main() {
 			// 아래는 테스트 트랜잭션만 처리 하기 위해 추가
 			// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
 			// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
-			if txhash.Hex() != "0x3c231dc7989f6a155964b350c477e565fac16334e5639d2270bf9b04095bdbcb" {
-				continue
-			}
+			// if txhash.Hex() != "0x3c231dc7989f6a155964b350c477e565fac16334e5639d2270bf9b04095bdbcb" {
+			// 	continue
+			// }
 
 			transferSigCount := 0
 			orderMatchSig := 0
