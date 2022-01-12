@@ -97,8 +97,8 @@ func main() {
 	// block number 13330090 (Oct-01-2021 12:00:00 AM +UTC)
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
-	var fromBlockNumber int64 = 13330090 //13717846
-	var toBlockNumber int64 = 13527858
+	var fromBlockNumber int64 = 13367772 //13717846
+	var toBlockNumber int64 = 13367772
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -150,9 +150,9 @@ func main() {
 			// 아래는 테스트 트랜잭션만 처리 하기 위해 추가
 			// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
 			// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
-			// if txhash.Hex() != "0xb6cf45574456ce1037248c3dfcb744e25ebb572f89c95bcec095a3d056a3bcac" {
-			// 	continue
-			// }
+			if txhash.Hex() != "0x3c231dc7989f6a155964b350c477e565fac16334e5639d2270bf9b04095bdbcb" {
+				continue
+			}
 
 			transferSigCount := 0
 			orderMatchSig := 0
@@ -206,16 +206,21 @@ func main() {
 
 					}
 
+					replacer := strings.NewReplacer(" ", "_", ":", "", "?", "", "*", "", "<", "", ">", "", "|", "", "\"", "", "/", "")
+					contractNameFilter := replacer.Replace(tokeninfo.ContractName)
+
 					if len(tokenuri) > 3 {
 
 						if strings.Contains(tokenuri, "data:application/json") == true {
 
-							filename := fmt.Sprintf("%s_%s.svg", strings.ReplaceAll(tokeninfo.ContractName, " ", "_"), tokeninfo.TokenID)
+							filename := fmt.Sprintf("%s_%s.svg", contractNameFilter, tokeninfo.TokenID)
 							pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 							result := getImageFromDataApplicationJson(tokenuri, pathandfilename)
 
 							if result == "OK" {
 								tokeninfo.FileName = filename
+							} else {
+								logger.ErrorLog("--------------------------getImageFromDataApplicationJson Not OK Transaction[%s] , Tokenuri[%s] Error[%s]\n ", txhash, tokenuri)
 							}
 
 						} else {
@@ -235,7 +240,7 @@ func main() {
 
 								logger.InfoLog("start download image uri : %s \n", imageuri)
 
-								filename := fmt.Sprintf("%s_%s.png", strings.ReplaceAll(tokeninfo.ContractName, " ", "_"), tokeninfo.TokenID)
+								filename := fmt.Sprintf("%s_%s.png", contractNameFilter, tokeninfo.TokenID)
 								pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 
 								err = downloadFile(imageuri, pathandfilename)
@@ -501,6 +506,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 	err = json.Unmarshal(data, &tokenMetaData)
 	if err != nil {
 		logger.ErrorLog(" tokenMetaData base64 Unmarshal Error : ", err)
+		logger.InfoLog("token DecodeString [%s]\n", string(data))
 		return ""
 	}
 

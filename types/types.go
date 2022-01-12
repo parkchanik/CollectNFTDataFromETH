@@ -47,7 +47,7 @@ type TokenMetaDataBase64 struct {
 	Description string `json:"description"`
 	Image       string `json:"image"`
 	Attributes  []struct {
-		TraitType string `json:"trait_type"`
-		Value     string `json:"value"`
+		TraitType string      `json:"trait_type"`
+		Value     interface{} `json:"value"`
 	} `json:"attributes"`
 }
