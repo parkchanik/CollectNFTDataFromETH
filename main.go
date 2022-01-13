@@ -97,8 +97,8 @@ func main() {
 	// block number 13330090 (Oct-01-2021 12:00:00 AM +UTC)
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
-	var fromBlockNumber int64 = 13367772 //13717846
-	var toBlockNumber int64 = 13367772
+	var fromBlockNumber int64 = 13347221 //13347221
+	var toBlockNumber int64 = 13347221   //13347221
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -150,7 +150,9 @@ func main() {
 			// 아래는 테스트 트랜잭션만 처리 하기 위해 추가
 			// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
 			// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
-			// if txhash.Hex() != "0x3c231dc7989f6a155964b350c477e565fac16334e5639d2270bf9b04095bdbcb" {
+			// if txhash.Hex() != "0x64f4d05c6b005e00788858d7e6db795c65dd7e4a23b7bcdad6f5fbd3c75e4e3a" {
+			// 	//if txhash.Hex() != "0x2bd7159cfa698f0d9a6350c29b6fb23ac2f6a62c1eca0f8ed9adb209ca715744" {
+
 			// 	continue
 			// }
 
@@ -160,6 +162,8 @@ func main() {
 			//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer
 			// transfer 함수가 없으면 패스 하는걸로 한다
 			// 첫번째 토픽 OrdersMatched 로그가 아니
+
+			orderMatchContractAddress := ""
 			for _, m := range rept.Logs {
 				if m.Topics[0] == logTransferSigHash {
 					transferSigCount = transferSigCount + 1
@@ -171,6 +175,8 @@ func main() {
 
 				if m.Topics[0] == logOrderMatchedSigHash {
 					orderMatchSig = orderMatchSig + 1
+
+					orderMatchContractAddress = m.Address.Hex()
 				}
 
 			}
@@ -193,7 +199,7 @@ func main() {
 			}
 
 			logger.InfoLog("--------------------------------------------------------------------------------------------------------\n")
-			logger.InfoLog("!!!!!!!!!!transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, txhash)
+			logger.InfoLog("!!!!!!!!!!transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] , orderMatchContractAddress[%s] , txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, orderMatchContractAddress, txhash)
 
 			tokenInfos := make([]TokenInfo, 0)
 
@@ -217,10 +223,12 @@ func main() {
 							pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 							result := getImageFromDataApplicationJson(tokenuri, pathandfilename)
 
+							tokeninfo.FileName = filename
+
 							if result == "OK" {
-								tokeninfo.FileName = filename
+
 							} else {
-								logger.ErrorLog("--------------------------getImageFromDataApplicationJson Not OK Transaction[%s] , Tokenuri[%s] Error[%s]\n ", txhash, tokenuri)
+								logger.ErrorLog("--------------------------getImageFromDataApplicationJson Not OK Transaction[%s] , Tokenuri[%s] , FileName[%s] , Error[%s]\n ", txhash, tokenuri, filename, err.Error())
 							}
 
 						} else {
@@ -243,13 +251,12 @@ func main() {
 								filename := fmt.Sprintf("%s_%s.png", contractNameFilter, tokeninfo.TokenID)
 								pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 
+								tokeninfo.FileName = filename
+
 								err = downloadFile(imageuri, pathandfilename)
 								if err != nil {
-									logger.ErrorLog("--------------------------downloadfile error Transaction[%s] , Image[%s] Error[%s]\n ", txhash, imageuri, err.Error())
+									logger.ErrorLog("--------------------------downloadfile error Transaction[%s] , Image[%s] , FileName[%s] , Error[%s]\n ", txhash, imageuri, filename, err.Error())
 
-								} else {
-
-									tokeninfo.FileName = filename
 								}
 							}
 
@@ -367,32 +374,39 @@ func getTokenMetaData(tokenuri string) (TokenMetaData, error) {
 	//ipfs:// 로 시작하면 변경해줘야 한다
 	// https://ipfs.io/ipfs/QmSTtv3w1jqcv5AKRRYVR5NN7fkTuuL9sNrkxRNL9e3fUo/4744 이런식으로
 
-	if strings.Contains(tokenuri, "ipfs://") == true {
+	// tokenuri
+	//ipfs://QmWS694ViHvkTms9UkKqocv1kWDm2MTQqYEJeYi6LsJbxK 이런 경우가있고
+	//ipfs://ipfs/QmWS694ViHvkTms9UkKqocv1kWDm2MTQqYEJeYi6LsJbxK 이런 경우도 있다 이놈때문에이렇게 바꿔존다
+	// https://ipfs.io/ipfs/QmWS694ViHvkTms9UkKqocv1kWDm2MTQqYEJeYi6LsJbxK 이렇게 바꾼다
 
-		tokenuri = strings.ReplaceAll(tokenuri, "ipfs://", "https://ipfs.io/ipfs/")
-		logger.InfoLog("ipfs tokenuri change : %s", tokenuri)
+	logger.InfoLog("-------tokenuri before : %s", tokenuri)
 
-	}
+	r := strings.NewReplacer("ipfs://ipfs/", "https://ipfs.io/ipfs/", "ipfs://", "https://ipfs.io/ipfs/")
+
+	tokenuri = r.Replace(tokenuri)
+
+	logger.InfoLog("-------tokenuri after  %s", tokenuri)
 
 	res, err := http.Get(tokenuri)
 	if err != nil {
+		logger.ErrorLog("-------getTokenMetaData http.Get(tokenuri) tokenuri[%s] error[%s] ", tokenuri, err.Error())
 		return metadata, err
-		//fmt.Printf("http Get Error Transaction[%s] , Tokenuri[%s] Error[%s]\n ", vLog.TxHash, tokenuri, err.Error())
+
 	}
 
 	defer res.Body.Close()
 
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		logger.ErrorLog("-------getTokenMetaData ioutil.ReadAll tokenuri[%s] error[%s] ", tokenuri, err.Error())
 		return metadata, err
-		//fmt.Printf("res.Body error  Transaction[%s] , Tokenuri[%s] Error[%s]\n ", vLog.TxHash, tokenuri, err.Error())
 
 	}
 
 	err = json.Unmarshal(data, &metadata)
 	if err != nil {
+		logger.ErrorLog("-------getTokenMetaData  json.Unmarshal(data, &metadata)  data[%s] error[%s] ", string(data), err.Error())
 		return metadata, err
-		//fmt.Printf("metadata unmarshal error Transaction[%s] , Tokenuri[%s] Error[%s]\n ", vLog.TxHash, tokenuri, err.Error())
 
 	}
 
@@ -409,6 +423,7 @@ func downloadFile(URL, fileName string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
+		logger.ErrorLog("-------downloadFile status code is not 200  URL[%s] fileName[%s] , code[%d]", URL, fileName, response.StatusCode)
 		return errors.New("Received non 200 response code")
 	}
 	//Create a empty file
@@ -493,27 +508,78 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 	tokenuriarr := strings.Split(tokenuri, ",")
 
-	//logger.InfoLog("token uri data:json : imageuri tokenuriarr[1]  ---- uri [%s]\n", tokenuriarr[1])
-
-	data, err := base64.StdEncoding.DecodeString(tokenuriarr[1])
-	if err != nil {
-		logger.ErrorLog(" tokenMetaData base64.StdEncoding.DecodeString Error : ", err)
-		return ""
-	}
-
 	tokenMetaData := TokenMetaDataBase64{}
 
-	err = json.Unmarshal(data, &tokenMetaData)
-	if err != nil {
-		logger.ErrorLog(" tokenMetaData base64 Unmarshal Error : ", err)
-		logger.InfoLog("token DecodeString [%s]\n", string(data))
+	if strings.Trim(tokenuriarr[0], " ") == "data:application/json;utf8" {
+
+		//logger.InfoLog("token uri data:json : strings.Replace(tokenuri, data:application/json;utf8 uri %s\n", strings.Replace(tokenuri, "data:application/json;utf8,", "", 1))
+
+		data := strings.Replace(tokenuri, "data:application/json;utf8,", "", 1)
+
+		//logger.InfoLog("------- tokenuri uri [%s]\n", tokenuriarr[0])
+		err := json.Unmarshal([]byte(data), &tokenMetaData)
+		if err != nil {
+			logger.ErrorLog(" tokenMetaData utf8 Unmarshal Error : ", err)
+			logger.InfoLog("token string [%s]\n", tokenuriarr[1])
+			return ""
+		}
+
+	} else if strings.Trim(tokenuriarr[0], " ") == "data:application/json;base64" {
+
+		logger.InfoLog("------- tokenuri uri [%s]\n", tokenuriarr[0])
+
+		data, err := base64.StdEncoding.DecodeString(tokenuriarr[1])
+		if err != nil {
+			logger.ErrorLog(" tokenMetaData base64.StdEncoding.DecodeString Error : ", err)
+			return ""
+		}
+
+		//fmt.Printf("test data : %s\n", string(data))
+
+		err = json.Unmarshal(data, &tokenMetaData)
+		if err != nil {
+			logger.ErrorLog(" tokenMetaData base64 Unmarshal Error : ", err)
+			logger.InfoLog("token DecodeString [%s]\n", string(data))
+			return ""
+		}
+
+	} else {
+
+		logger.ErrorLog("------- tokenuri uri not  data:application/json;utf8 and  data:application/json;base64 [%s]\n", tokenuriarr[0])
 		return ""
 	}
+
+	//logger.InfoLog("token uri data:json : imageuri tokenuriarr[1]  ---- uri [%s]\n", tokenuriarr[1])
 
 	imagearr := strings.Split(tokenMetaData.Image, ",")
 
-	// svg , base64 로 인코딩 되어있는 경우 svg 를 파일로
-	if imagearr[0] == "data:image/svg+xml;base64" {
+	file, err := os.Create(pathandfilename)
+	if err != nil {
+		logger.ErrorLog("getImageFromDataApplicationJson os.Create Error : ", err)
+		return ""
+	}
+
+	defer file.Close()
+
+	//logger.InfoLog("tokenMetaData.Image[%s]\n", tokenMetaData.Image)
+
+	if strings.Trim(imagearr[0], " ") == "data:image/svg+xml;utf8" {
+
+		//logger.InfoLog("data:image/svg+xml;utf8 imagearr[1][%s]\n", imagearr[2])
+
+		imageUTF8 := strings.Replace(tokenMetaData.Image, "data:image/svg+xml;utf8,", "", 1)
+
+		cnt, err := file.WriteString(imageUTF8)
+		if err != nil {
+			logger.ErrorLog("getImageFromDataApplicationJson data:image/svg+xml;utf8 file.WriteString Error : ", err)
+			return ""
+		}
+
+		logger.InfoLog("file.WriteString data:image/svg+xml;utf8 cnt %d ", cnt)
+
+		return "OK"
+
+	} else if strings.Trim(imagearr[0], " ") == "data:image/svg+xml;base64" { // svg , base64 로 인코딩 되어있는 경우 svg 를 파일로
 		imgdata, err := base64.StdEncoding.DecodeString(imagearr[1])
 		if err != nil {
 			logger.ErrorLog("base64.StdEncoding.DecodeString(imagearr Error : ", err)
@@ -522,21 +588,13 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 		//logger.InfoLog("base64.StdEncoding.DecodeString  %s\n", imgdata)
 
-		file, err := os.Create(pathandfilename)
-		if err != nil {
-			logger.ErrorLog("getImageFromDataApplicationJson os.Create Error : ", err)
-			return ""
-		}
-
-		defer file.Close()
-
 		cnt, err := file.WriteString(string(imgdata))
 		if err != nil {
-			logger.ErrorLog("getImageFromDataApplicationJson file.WriteString Error : ", err)
+			logger.ErrorLog("getImageFromDataApplicationJson data:image/svg+xml;base64 file.WriteString Error : ", err)
 			return ""
 		}
 
-		logger.InfoLog("file.WriteString cnt %d ", cnt)
+		logger.InfoLog("file.WriteString data:image/svg+xml;base64 cnt %d ", cnt)
 
 		return "OK"
 	}
