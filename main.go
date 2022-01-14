@@ -246,8 +246,6 @@ func main() {
 									imageuri = strings.ReplaceAll(imageuri, "ipfs://", "https://ipfs.io/ipfs/")
 								}
 
-								logger.InfoLog("start download image uri : %s \n", imageuri)
-
 								filename := fmt.Sprintf("%s_%s.png", contractNameFilter, tokeninfo.TokenID)
 								pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 
@@ -416,6 +414,9 @@ func getTokenMetaData(tokenuri string) (TokenMetaData, error) {
 
 func downloadFile(URL, fileName string) error {
 	//Get the response bytes from the url
+
+	logger.InfoLog("start download image uri : %s , fileName : %s \n", URL, fileName)
+
 	response, err := http.Get(URL)
 	if err != nil {
 		return err
