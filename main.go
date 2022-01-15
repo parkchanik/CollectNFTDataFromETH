@@ -97,8 +97,8 @@ func main() {
 	// block number 13330090 (Oct-01-2021 12:00:00 AM +UTC)
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
-	var fromBlockNumber int64 = 13347221 //13347221
-	var toBlockNumber int64 = 13347221   //13347221
+	var fromBlockNumber int64 = 13366775 //13347221
+	var toBlockNumber int64 = 13366775   //13347221
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -120,7 +120,7 @@ func main() {
 
 		block, err := client.BlockByNumber(context.Background(), blockNum)
 		if err != nil {
-			logger.ErrorLog("!!!!!!!!!!!!!!!!!!!!!!!!!!BlockByHash Hash Get Error BlockByNumber[%d] , err[%s]\n", blockNum.Int64(), err.Error())
+			logger.InfoLog("!!!!!!!!!!!!!!!!!!!!!!!!!!BlockByHash Hash Get Error BlockByNumber[%d] , err[%s]\n", blockNum.Int64(), err.Error())
 			log.Fatal(err)
 		}
 
@@ -139,7 +139,7 @@ func main() {
 			// 해당 트랜잭션의 영수증
 			rept, err := client.TransactionReceipt(context.Background(), txhash)
 			if err != nil {
-				logger.ErrorLog("!!!!!!!!!!!!!!!!!!!!!!!!!!TransactionReceiptt Error vLog.TxHash[%s] , err[%s]\n", txhash, err.Error())
+				logger.InfoLog("!!!!!!!!!!!!!!!!!!!!!!!!!!TransactionReceiptt Error vLog.TxHash[%s] , err[%s]\n", txhash, err.Error())
 				continue
 			}
 
@@ -150,8 +150,8 @@ func main() {
 			// 아래는 테스트 트랜잭션만 처리 하기 위해 추가
 			// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
 			// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
-			// if txhash.Hex() != "0x64f4d05c6b005e00788858d7e6db795c65dd7e4a23b7bcdad6f5fbd3c75e4e3a" {
-			// 	//if txhash.Hex() != "0x2bd7159cfa698f0d9a6350c29b6fb23ac2f6a62c1eca0f8ed9adb209ca715744" {
+			// if txhash.Hex() != "0xf0179b678809acff8535ad89338bc7fa8a87d28cc10f07c7e595ef823b0e4690" {
+			// 	//if txhash.Hex() != "0xb1fb69d64a83263472cad406fba7eb018c29912b453c4ed4b206a0bb767e7af5" {
 
 			// 	continue
 			// }
@@ -189,7 +189,7 @@ func main() {
 			// !!!!!!!!!!transferSigCount[2] , transferSingleSigCount[0] ,  orderMatchSig[0] txs.Hash[0x3441db76d0221145ea77416fa91d5f2bf67d526e4eecc1c9451545d68da9f989]
 
 			if orderMatchSig == 0 {
-				//logger.ErrorLog("!!!!!!!!!!|| orderMatchSig == 0 txs.Hash[%s]\n", txhash)
+				//logger.InfoLog("!!!!!!!!!!|| orderMatchSig == 0 txs.Hash[%s]\n", txhash)
 				continue
 			}
 
@@ -208,8 +208,12 @@ func main() {
 
 					tokeninfo, tokenuri, err := getDataERC721(*z)
 					if err != nil {
-						logger.ErrorLog("--------------------------getDataERC721 txs.Hash[%s] , error[%s] ", txhash, err.Error())
+						logger.InfoLog("--------------------------getDataERC721 txs.Hash[%s] , error[%s] ", txhash, err.Error())
 
+					}
+
+					if tokeninfo == nil {
+						continue
 					}
 
 					replacer := strings.NewReplacer(" ", "_", ":", "", "?", "", "*", "", "<", "", ">", "", "|", "", "\"", "", "/", "")
@@ -228,7 +232,7 @@ func main() {
 							if result == "OK" {
 
 							} else {
-								logger.ErrorLog("--------------------------getImageFromDataApplicationJson Not OK Transaction[%s] , Tokenuri[%s] , FileName[%s] , Error[%s]\n ", txhash, tokenuri, filename, err.Error())
+								logger.InfoLog("--------------------------getImageFromDataApplicationJson Not OK Transaction[%s] , Tokenuri[%s] , FileName[%s] , Error[%s]\n ", txhash, tokenuri, filename, err.Error())
 							}
 
 						} else {
@@ -237,7 +241,7 @@ func main() {
 
 							tokenMetaData, err := getTokenMetaData(tokenuri)
 							if err != nil {
-								logger.ErrorLog("--------------------------getTokenImageUri Transaction[%s] , Tokenuri[%s] Error[%s]\n ", txhash, tokenuri, err.Error())
+								logger.InfoLog("--------------------------getTokenImageUri Transaction[%s] , Tokenuri[%s] Error[%s]\n ", txhash, tokenuri, err.Error())
 							} else {
 
 								imageuri := tokenMetaData.Image
@@ -253,7 +257,7 @@ func main() {
 
 								err = downloadFile(imageuri, pathandfilename)
 								if err != nil {
-									logger.ErrorLog("--------------------------downloadfile error Transaction[%s] , Image[%s] , FileName[%s] , Error[%s]\n ", txhash, imageuri, filename, err.Error())
+									logger.InfoLog("--------------------------downloadfile error Transaction[%s] , Image[%s] , FileName[%s] , Error[%s]\n ", txhash, imageuri, filename, err.Error())
 
 								}
 							}
@@ -387,7 +391,7 @@ func getTokenMetaData(tokenuri string) (TokenMetaData, error) {
 
 	res, err := http.Get(tokenuri)
 	if err != nil {
-		logger.ErrorLog("-------getTokenMetaData http.Get(tokenuri) tokenuri[%s] error[%s] ", tokenuri, err.Error())
+		logger.InfoLog("-------getTokenMetaData http.Get(tokenuri) tokenuri[%s] error[%s] ", tokenuri, err.Error())
 		return metadata, err
 
 	}
@@ -396,14 +400,14 @@ func getTokenMetaData(tokenuri string) (TokenMetaData, error) {
 
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		logger.ErrorLog("-------getTokenMetaData ioutil.ReadAll tokenuri[%s] error[%s] ", tokenuri, err.Error())
+		logger.InfoLog("-------getTokenMetaData ioutil.ReadAll tokenuri[%s] error[%s] ", tokenuri, err.Error())
 		return metadata, err
 
 	}
 
 	err = json.Unmarshal(data, &metadata)
 	if err != nil {
-		logger.ErrorLog("-------getTokenMetaData  json.Unmarshal(data, &metadata)  data[%s] error[%s] ", string(data), err.Error())
+		logger.InfoLog("-------getTokenMetaData  json.Unmarshal(data, &metadata)  data[%s] error[%s] ", string(data), err.Error())
 		return metadata, err
 
 	}
@@ -424,7 +428,7 @@ func downloadFile(URL, fileName string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		logger.ErrorLog("-------downloadFile status code is not 200  URL[%s] fileName[%s] , code[%d]", URL, fileName, response.StatusCode)
+		logger.InfoLog("-------downloadFile status code is not 200  URL[%s] fileName[%s] , code[%d]", URL, fileName, response.StatusCode)
 		return errors.New("Received non 200 response code")
 	}
 	//Create a empty file
@@ -451,26 +455,26 @@ func getDataERC721(eventlog types.Log) (*TokenInfo, string, error) {
 
 	instance, err := erc721.NewErc721(eventlog.Address, client)
 	if err != nil {
-		logger.ErrorLog("-------getDataERC721 NewErc721 contractAddressHex[%s] , error[%s] ", contractAddressHex, err.Error())
+		logger.InfoLog("-------getDataERC721 NewErc721 contractAddressHex[%s] , error[%s] ", contractAddressHex, err.Error())
 		return nil, tokenuri, err
 	}
 
 	contractName, err := instance.Name(&bind.CallOpts{})
 	if err != nil {
-		logger.ErrorLog("-------getDataERC721 instance.Name error[%s] ", err.Error())
-		return nil, tokenuri, err
+		logger.InfoLog("-------getDataERC721 instance.Name error[%s] ", err.Error())
+		//return nil, tokenuri, err
 	}
 
 	symbol, err := instance.Symbol(&bind.CallOpts{})
 	if err != nil {
-		logger.ErrorLog("-------getDataERC721 instance.Symbol error[%s] ", err.Error())
+		logger.InfoLog("-------getDataERC721 instance.Symbol error[%s] ", err.Error())
 		//return nil, tokenuri, err
 	}
 
 	//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer
 	erc721transfer, err := instance.ParseTransfer(eventlog)
 	if err != nil {
-		logger.ErrorLog("--------------------------instance.ParseTransfer  error[%s] ", err.Error())
+		logger.InfoLog("--------------------------instance.ParseTransfer  error[%s] ", err.Error())
 		return nil, tokenuri, err
 	}
 
@@ -478,6 +482,14 @@ func getDataERC721(eventlog types.Log) (*TokenInfo, string, error) {
 	tokenid := erc721transfer.TokenId
 
 	logger.InfoLog("---erc721transerver From[%s] , To[%s]  , TokenID[%d]", erc721transfer.From.Hex(), erc721transfer.To.Hex(), erc721transfer.TokenId.Int64())
+
+	if len(contractName) < 1 {
+		contractName = "ContractHaveNoName"
+	}
+
+	if len(symbol) < 1 {
+		symbol = "ContractHaveNoSymbol"
+	}
 
 	tokeninfo := &TokenInfo{}
 
@@ -493,7 +505,7 @@ func getDataERC721(eventlog types.Log) (*TokenInfo, string, error) {
 
 	tokenuri, err = instance.TokenURI(&bind.CallOpts{}, tokenid)
 	if err != nil {
-		logger.ErrorLog("--------------------------Token URI : tokenid[%d] , error[%s] ", tokenid.Int64(), err.Error())
+		logger.InfoLog("--------------------------Token URI : tokenid[%d] , error[%s] ", tokenid.Int64(), err.Error())
 		return tokeninfo, tokenuri, err
 	}
 
@@ -520,7 +532,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 		//logger.InfoLog("------- tokenuri uri [%s]\n", tokenuriarr[0])
 		err := json.Unmarshal([]byte(data), &tokenMetaData)
 		if err != nil {
-			logger.ErrorLog(" tokenMetaData utf8 Unmarshal Error : ", err)
+			logger.InfoLog(" tokenMetaData utf8 Unmarshal Error : ", err)
 			logger.InfoLog("token string [%s]\n", tokenuriarr[1])
 			return ""
 		}
@@ -531,7 +543,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 		data, err := base64.StdEncoding.DecodeString(tokenuriarr[1])
 		if err != nil {
-			logger.ErrorLog(" tokenMetaData base64.StdEncoding.DecodeString Error : ", err)
+			logger.InfoLog(" tokenMetaData base64.StdEncoding.DecodeString Error : ", err)
 			return ""
 		}
 
@@ -539,14 +551,14 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 		err = json.Unmarshal(data, &tokenMetaData)
 		if err != nil {
-			logger.ErrorLog(" tokenMetaData base64 Unmarshal Error : ", err)
+			logger.InfoLog(" tokenMetaData base64 Unmarshal Error : ", err)
 			logger.InfoLog("token DecodeString [%s]\n", string(data))
 			return ""
 		}
 
 	} else {
 
-		logger.ErrorLog("------- tokenuri uri not  data:application/json;utf8 and  data:application/json;base64 [%s]\n", tokenuriarr[0])
+		logger.InfoLog("------- tokenuri uri not  data:application/json;utf8 and  data:application/json;base64 [%s]\n", tokenuriarr[0])
 		return ""
 	}
 
@@ -556,7 +568,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 	file, err := os.Create(pathandfilename)
 	if err != nil {
-		logger.ErrorLog("getImageFromDataApplicationJson os.Create Error : ", err)
+		logger.InfoLog("getImageFromDataApplicationJson os.Create Error : ", err)
 		return ""
 	}
 
@@ -572,7 +584,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 		cnt, err := file.WriteString(imageUTF8)
 		if err != nil {
-			logger.ErrorLog("getImageFromDataApplicationJson data:image/svg+xml;utf8 file.WriteString Error : ", err)
+			logger.InfoLog("getImageFromDataApplicationJson data:image/svg+xml;utf8 file.WriteString Error : ", err)
 			return ""
 		}
 
@@ -583,7 +595,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 	} else if strings.Trim(imagearr[0], " ") == "data:image/svg+xml;base64" { // svg , base64 로 인코딩 되어있는 경우 svg 를 파일로
 		imgdata, err := base64.StdEncoding.DecodeString(imagearr[1])
 		if err != nil {
-			logger.ErrorLog("base64.StdEncoding.DecodeString(imagearr Error : ", err)
+			logger.InfoLog("base64.StdEncoding.DecodeString(imagearr Error : ", err)
 			return ""
 		}
 
@@ -591,7 +603,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 		cnt, err := file.WriteString(string(imgdata))
 		if err != nil {
-			logger.ErrorLog("getImageFromDataApplicationJson data:image/svg+xml;base64 file.WriteString Error : ", err)
+			logger.InfoLog("getImageFromDataApplicationJson data:image/svg+xml;base64 file.WriteString Error : ", err)
 			return ""
 		}
 
@@ -607,7 +619,7 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 // erc1155instance, err := erc1155.NewErc1155(contractAddress, client)
 // if err != nil {
-// 	logger.ErrorLog("!!!!!!!!!!NewErc1155 erc !!!! == 0 txs.Hash[%s] , error[%s]\n", txhash, err.Error())
+// 	logger.InfoLog("!!!!!!!!!!NewErc1155 erc !!!! == 0 txs.Hash[%s] , error[%s]\n", txhash, err.Error())
 
 // }
 
@@ -617,25 +629,25 @@ func getImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 
 // erc1155transfersingle, err := erc1155instance.ParseTransferSingle(*z)
 // if err != nil {
-// 	logger.ErrorLog("!!!!!!!!!!erc1155transfersingle ParseTransferSingle txs.Hash[%s] , error[%s]\n", txhash, err.Error())
+// 	logger.InfoLog("!!!!!!!!!!erc1155transfersingle ParseTransferSingle txs.Hash[%s] , error[%s]\n", txhash, err.Error())
 // }
 
 // logger.InfoLog("erc1155transfersingle ParseTransferSingle ID [%s] , Value[%d] \n", erc1155transfersingle.Id.String(), erc1155transfersingle.Value.Int64())
 
 // erc1155uri, err := erc1155instance.Uri(&bind.CallOpts{}, erc1155transfersingle.Value)
 // if err != nil {
-// 	logger.ErrorLog("!!!!!!!!!!erc1155instance.Uri txs.Hash[%s] , error[%s]\n", txhash, err.Error())
+// 	logger.InfoLog("!!!!!!!!!!erc1155instance.Uri txs.Hash[%s] , error[%s]\n", txhash, err.Error())
 // }
 
 // erc1155json, err := erc1155transfersingle.Raw.MarshalJSON()
 // if err != nil {
-// 	logger.ErrorLog("!!!!!!!erc1155transfersingle.Raw.MarshalJSON() txs.Hash[%s] , error[%s]\n", txhash, err.Error())
+// 	logger.InfoLog("!!!!!!!erc1155transfersingle.Raw.MarshalJSON() txs.Hash[%s] , error[%s]\n", txhash, err.Error())
 // }
 // fmt.Println(" erc1155transfersingle json ", string(erc1155json))
 
 // erc1155uri, err := erc1155instance.Uri(&bind.CallOpts{}, arg0)
 // if err != nil {
-// 	logger.ErrorLog("!!!!!!!!!!erc1155instance.Uri error txs.Hash[%s] , error[%s]\n", txhash, err.Error())
+// 	logger.InfoLog("!!!!!!!!!!erc1155instance.Uri error txs.Hash[%s] , error[%s]\n", txhash, err.Error())
 // }
 
 //logger.InfoLog("erc1155instance uri [%s]\n", erc1155uri)
