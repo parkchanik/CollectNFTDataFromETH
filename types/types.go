@@ -27,9 +27,10 @@ type TransferInfo struct {
 }
 
 type TokenInfo struct {
+	TransactionHash common.Hash
+	Contractaddress common.Address
 	ContractName    string
 	Symbol          string
-	Contractaddress string
 	TokenID         string
 	FileName        string
 }

@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-var datalogging *log.Logger
-var errorlogging *log.Logger
+var trxlogging *log.Logger
+var tokenlogging *log.Logger
 var infologging *log.Logger
 
 func LoggerInit() {
@@ -28,25 +28,25 @@ func LoggerInit() {
 	}
 	t := time.Now()
 	//logfile := path + "transactiondata" + t.Format("20060102_15") + ".log"
-	filenameprefix := "transactiondata"
+	filenameprefix := "trx_data"
 	logfile := fmt.Sprintf("%s%s_%s.log", path, filenameprefix, t.Format("20060102_15"))
 	datafile, err := os.OpenFile(logfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660)
 	if err != nil {
 		log.Fatalln("Failed to open error log file:", err)
 	}
 
-	datalogging = log.New(io.MultiWriter(datafile, os.Stdout), "", 0)
+	trxlogging = log.New(io.MultiWriter(datafile, os.Stdout), "", 0)
 
-	errorfilenameprefix := "transactiondata_error"
-	errorlogfile := fmt.Sprintf("%s%s_%s.log", path, errorfilenameprefix, t.Format("20060102_15"))
-	errorfile, err := os.OpenFile(errorlogfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660)
+	tokenfilenameprefix := "token_data"
+	tokenlogfile := fmt.Sprintf("%s%s_%s.log", path, tokenfilenameprefix, t.Format("20060102_15"))
+	tokenfile, err := os.OpenFile(tokenlogfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660)
 	if err != nil {
 		log.Fatalln("Failed to open error log file:", err)
 	}
 
-	errorlogging = log.New(io.MultiWriter(errorfile, os.Stdout), "", 0)
+	tokenlogging = log.New(io.MultiWriter(tokenfile, os.Stdout), "", 0)
 
-	infofilenameprefix := "transactiondata_info"
+	infofilenameprefix := "info"
 	infologfile := fmt.Sprintf("%s%s_%s.log", path, infofilenameprefix, t.Format("20060102_15"))
 	infofile, err := os.OpenFile(infologfile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0660)
 	if err != nil {
@@ -57,13 +57,13 @@ func LoggerInit() {
 
 }
 
-func DataLog(data string) {
-	datalogging.Println(data)
-}
-func ErrorLog(format string, v ...interface{}) {
-	errorlogging.Printf(format, v...)
+func TrxLog(data string) {
+	trxlogging.Println(data)
 }
 
+func TokenLog(data string) {
+	tokenlogging.Println(data)
+}
 func InfoLog(format string, v ...interface{}) {
 	infologging.Printf(format, v...)
 }

@@ -10,6 +10,9 @@ import (
 	"runtime"
 	"time"
 
+	"bytes"
+	"strings"
+
 	"fmt"
 	"io"
 	"log"
@@ -19,8 +22,6 @@ import (
 
 	//"math"
 	//"encoding/hex"
-
-	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -102,8 +103,8 @@ func main() {
 	// block number 13330090 (Oct-01-2021 12:00:00 AM +UTC)
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
-	var fromBlockNumber int64 = 14020269 //13347221
-	var toBlockNumber int64 = 14020269   //13347221
+	var fromBlockNumber int64 = 13330303 //13347221
+	var toBlockNumber int64 = 13330303   //13347221
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -112,8 +113,8 @@ func main() {
 
 	logger.InfoLog("-----Start fromBlockNumber :  %d , toBlockNumber : %d", fromBlockNumber, toBlockNumber)
 
-	//var minETHValue int64 = 8000000000000000000
-	var minETHValue int64 = 0
+	var minETHValue int64 = 8000000000000000000
+	//var minETHValue int64 = 0
 
 	i := fromBlockNumber
 
@@ -156,7 +157,7 @@ func main() {
 			// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
 			// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
 			// if txhash.Hex() != "0xf0179b678809acff8535ad89338bc7fa8a87d28cc10f07c7e595ef823b0e4690" {
-			if txhash.Hex() != "0x41579b56e79e42e22e7f93efbc768ad12e00aabec0152a6ffe85a1fb6ac72a66" {
+			if txhash.Hex() != "0x385c223e7183b5a0ed07edd5f72564f0df1874da428ffa1f325b4496cca631b6" {
 				continue
 			}
 
@@ -205,23 +206,28 @@ func main() {
 			logger.InfoLog("--------------------------------------------------------------------------------------------------------\n")
 			logger.InfoLog("!!!!!!!!!!transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] , orderMatchContractAddress[%s] , txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, orderMatchContractAddress, txhash)
 
-			tokenInfos := make([]TokenInfo, 0)
+			//////////////////////////////
+
+			logdata := &LogData{}
+			logdata.TransactionHash = txs.Hash()
+			logdata.BlockTime = blocktimestring
+
+			logdata.EtherValue = etherint64
+
+			PrintTrxData(logdata)
 
 			for _, z := range rept.Logs {
 				if z.Topics[0] == logTransferSigHash { //Transfer
 
-					contractAddr, name, symbol, tokenid, tokenuri, err := GetDataERC721(*z)
+					contractAddr, name, symbol, tokenid, err := GetERC721Data(*z)
 					if err != nil {
 						logger.InfoLog("-------Error--getDataERC721 txs.Hash[%s] , error[%s] ", txhash, err.Error())
-
-					}
-
-					if name == "" {
 						continue
 					}
 
 					tokeninfo := &TokenInfo{}
 
+					tokeninfo.TransactionHash = txs.Hash()
 					tokeninfo.Contractaddress = contractAddr
 
 					tokeninfo.ContractName = name
@@ -229,31 +235,12 @@ func main() {
 					tokeninfo.Symbol = symbol
 
 					tokeninfo.TokenID = tokenid
-					replacer := strings.NewReplacer(" ", "_", ":", "", "?", "", "*", "", "<", "", ">", "", "|", "", "\"", "", "/", "")
-					contractNameFilter := replacer.Replace(tokeninfo.ContractName)
 
-					if len(tokenuri) > 3 {
-
-						GetTokenURIData(tokenuri, tokenid, contractNameFilter)
-					}
-
-					tokenInfos = append(tokenInfos, *tokeninfo)
+					PrintTokenData(tokeninfo)
+					//replacer := strings.NewReplacer(" ", "_", ":", "", "?", "", "*", "", "<", "", ">", "", "|", "", "\"", "", "/", "")
+					//contractNameFilter := replacer.Replace(tokeninfo.ContractName)
 
 				}
-			}
-
-			//////////////////////////////
-
-			if len(tokenInfos) > 0 { // 토큰 정보가 있을 경우만 log 쌓는다
-				logdata := LogData{}
-				logdata.TransactionHash = txs.Hash()
-				logdata.BlockTime = blocktimestring
-
-				logdata.EtherValue = etherint64
-
-				logdata.TokenInfos = tokenInfos
-
-				PrintLogData(logdata)
 			}
 
 		}
@@ -264,37 +251,47 @@ func main() {
 
 }
 
-func PrintLogData(logdata LogData) {
+func PrintTokenData(logdata *TokenInfo) {
+
+	transaction := logdata.TransactionHash.Hex()
+	contractAddress := logdata.Contractaddress.Hex()
+	contractName := logdata.ContractName
+	contractSymbol := logdata.Symbol
+	tokenID := logdata.TokenID
+
+	var b bytes.Buffer
+
+	b.WriteString(transaction)
+	b.WriteString(",")
+	b.WriteString(contractAddress)
+	b.WriteString(",")
+	b.WriteString(contractName)
+	b.WriteString(",")
+	b.WriteString(contractSymbol)
+	b.WriteString(",")
+	b.WriteString(tokenID)
+
+	logger.TokenLog(b.String())
+
+}
+
+func PrintTrxData(logdata *LogData) {
+
+	transaction := logdata.TransactionHash.Hex()
 
 	timestring := logdata.BlockTime[:10]
 
 	etherstring := fmt.Sprintf("%f", float64(logdata.EtherValue)/1000000000000000000)
 
-	keystring := ""
-	contname := ""
-	tokenstring := ""
-	filenamestring := ""
-	for n, v := range logdata.TokenInfos {
+	var b bytes.Buffer
 
-		//fmt.Println("n ,v: ", n, v)
+	b.WriteString(transaction)
+	b.WriteString(",")
+	b.WriteString(timestring)
+	b.WriteString(",")
+	b.WriteString(etherstring)
 
-		if n == 0 {
-			keystring = v.ContractName + "_" + v.TokenID
-			contname = v.ContractName
-			tokenstring = v.TokenID
-			filenamestring = v.FileName
-		} else {
-			keystring = keystring + "^" + v.ContractName + "_" + v.TokenID
-			contname = contname + "^" + v.ContractName
-			tokenstring = tokenstring + "^" + v.TokenID
-			filenamestring = filenamestring + "^" + v.FileName
-		}
-	}
-
-	fullrow := timestring + "," + keystring + "," + contname + "," + tokenstring + "," + etherstring + "," + filenamestring + "," + logdata.TransactionHash.Hex()
-
-	//2021-10-01,KingFrogs_1825,KingFrogs,0.599000,,0xd042af67fe46fafb3da976cbb789729532f18bc4b6ca963bf487410d562608cb
-	logger.DataLog(fullrow)
+	logger.TrxLog(b.String())
 
 }
 
@@ -415,7 +412,48 @@ func downloadFile(URL, fileName string) error {
 	return nil
 }
 
-//func getDataERC721(eventlog types.Log) (*TokenInfo, string, error) {
+func GetERC721Data(eventlog types.Log) (ContractAddr common.Address, Name string, Symbol string, TokenID string, err error) {
+
+	err = nil
+
+	ContractAddr = eventlog.Address
+	Name = ""
+	Symbol = ""
+	TokenID = ""
+
+	instance, err := erc721.NewErc721(eventlog.Address, client)
+	if err != nil {
+		logger.InfoLog("GetDataERC721 NewErc721 contractAddressHex[%s] , error[%s] ", ContractAddr.Hex(), err.Error())
+		return
+	}
+
+	Name, err = instance.Name(&bind.CallOpts{})
+	if err != nil {
+		logger.InfoLog("GetDataERC721 instance.Name error[%s] ", err.Error())
+
+	}
+
+	Symbol, err = instance.Symbol(&bind.CallOpts{})
+	if err != nil {
+		logger.InfoLog("GetDataERC721 instance.Symbol error[%s] ", err.Error())
+
+	}
+
+	//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer
+	erc721transfer, err := instance.ParseTransfer(eventlog)
+	if err != nil {
+		logger.InfoLog("GetDataERC721 instance.ParseTransfer  error[%s] ", err.Error())
+		return
+	}
+
+	TokenID = fmt.Sprintf("%s", erc721transfer.TokenId)
+
+	logger.InfoLog("GetDataERC721  From[%s] , To[%s]  , TokenID[%d]", erc721transfer.From.Hex(), erc721transfer.To.Hex(), erc721transfer.TokenId.Int64())
+
+	return
+
+}
+
 func GetDataERC721(eventlog types.Log) (ContractAddr string, Name string, Symbol string, TokenID string, TokenURI string, err error) {
 
 	err = nil
@@ -593,7 +631,7 @@ func GetTokenURIData(tokenuri, tokenid, contractName string) string {
 
 		tokenMetaData, err := getTokenMetaData(tokenuri)
 		if err != nil {
-			logger.InfoLog("--------------------------getTokenImageUri Transaction[%s] , Tokenuri[%s] Error[%s]\n ", txhash, tokenuri, err.Error())
+			logger.InfoLog("--------------------------getTokenImageUri , Tokenuri[%s] Error[%s]\n ", tokenuri, err.Error())
 		} else {
 
 			imageuri := tokenMetaData.Image
