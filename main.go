@@ -210,7 +210,7 @@ func main() {
 			for _, z := range rept.Logs {
 				if z.Topics[0] == logTransferSigHash { //Transfer
 
-					contractAddr, name, symbol, tokenid, tokenuri, err := getDataERC721(*z)
+					contractAddr, name, symbol, tokenid, tokenuri, err := GetDataERC721(*z)
 					if err != nil {
 						logger.InfoLog("-------Error--getDataERC721 txs.Hash[%s] , error[%s] ", txhash, err.Error())
 
@@ -234,56 +234,10 @@ func main() {
 
 					if len(tokenuri) > 3 {
 
-						if strings.Contains(tokenuri, "data:application/json") == true {
-
-							filename := fmt.Sprintf("%s_%s.svg", contractNameFilter, tokeninfo.TokenID)
-							pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
-							result := GetImageFromDataApplicationJson(tokenuri, pathandfilename)
-
-							tokeninfo.FileName = filename
-
-							if result == "OK" {
-
-							} else {
-								logger.InfoLog("--------------------------GetImageFromDataApplicationJson Not OK Transaction[%s] , Tokenuri[%s] , FileName[%s] , Error[%s]\n ", txhash, tokenuri, filename, err.Error())
-							}
-
-						} else {
-
-							logger.InfoLog("------- tokenuri uri [%s]\n", tokenuri)
-
-							tokenMetaData, err := getTokenMetaData(tokenuri)
-							if err != nil {
-								logger.InfoLog("--------------------------getTokenImageUri Transaction[%s] , Tokenuri[%s] Error[%s]\n ", txhash, tokenuri, err.Error())
-							} else {
-
-								imageuri := tokenMetaData.Image
-
-								filename := fmt.Sprintf("%s_%s.png", contractNameFilter, tokeninfo.TokenID)
-								pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
-
-								tokeninfo.FileName = filename
-
-								if strings.Contains(imageuri, "ipfs://") == true {
-									imageuri = strings.ReplaceAll(imageuri, "ipfs://", "https://ipfs.io/ipfs/")
-								}
-
-								if strings.Contains(imageuri, "ipfs") == true { /// 20220116 ipfs 에서 image 다운로드가 너무 오래걸린다  받아 지지도 않음 download pas
-
-									logger.InfoLog("------ipfs image url!! Transaction[%s] , Tokenuri[%s] FileName[%s] ,  ImageURL[%s]\n ", txhash, tokenuri, filename, imageuri)
-								} else {
-
-									err = downloadFile(imageuri, pathandfilename)
-									if err != nil {
-										logger.InfoLog("--------------------------downloadfile error Transaction[%s] , Image[%s] , FileName[%s] , Error[%s]\n ", txhash, imageuri, filename, err.Error())
-
-									}
-								}
-							}
-
-						}
-
+						GetTokenURIData(tokenuri, tokenid, contractNameFilter)
 					}
+
+					tokenInfos = append(tokenInfos, *tokeninfo)
 
 				}
 			}
@@ -299,7 +253,7 @@ func main() {
 
 				logdata.TokenInfos = tokenInfos
 
-				printLogData(logdata)
+				PrintLogData(logdata)
 			}
 
 		}
@@ -310,7 +264,7 @@ func main() {
 
 }
 
-func printLogData(logdata LogData) {
+func PrintLogData(logdata LogData) {
 
 	timestring := logdata.BlockTime[:10]
 
@@ -462,7 +416,7 @@ func downloadFile(URL, fileName string) error {
 }
 
 //func getDataERC721(eventlog types.Log) (*TokenInfo, string, error) {
-func getDataERC721(eventlog types.Log) (ContractAddr string, Name string, Symbol string, TokenID string, TokenURI string, err error) {
+func GetDataERC721(eventlog types.Log) (ContractAddr string, Name string, Symbol string, TokenID string, TokenURI string, err error) {
 
 	err = nil
 	ContractAddr = ""
@@ -474,36 +428,36 @@ func getDataERC721(eventlog types.Log) (ContractAddr string, Name string, Symbol
 
 	instance, err := erc721.NewErc721(eventlog.Address, client)
 	if err != nil {
-		logger.InfoLog("-------getDataERC721 NewErc721 contractAddressHex[%s] , error[%s] ", ContractAddr, err.Error())
+		logger.InfoLog("GetDataERC721 NewErc721 contractAddressHex[%s] , error[%s] ", ContractAddr, err.Error())
 		return
 	}
 
 	Name, err = instance.Name(&bind.CallOpts{})
 	if err != nil {
-		logger.InfoLog("-------getDataERC721 instance.Name error[%s] ", err.Error())
+		logger.InfoLog("GetDataERC721 instance.Name error[%s] ", err.Error())
 		return
 	}
 
 	Symbol, err = instance.Symbol(&bind.CallOpts{})
 	if err != nil {
-		logger.InfoLog("-------getDataERC721 instance.Symbol error[%s] ", err.Error())
+		logger.InfoLog("GetDataERC721 instance.Symbol error[%s] ", err.Error())
 		return
 	}
 
 	//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer
 	erc721transfer, err := instance.ParseTransfer(eventlog)
 	if err != nil {
-		logger.InfoLog("-------getDataERC721 instance.ParseTransfer  error[%s] ", err.Error())
+		logger.InfoLog("GetDataERC721 instance.ParseTransfer  error[%s] ", err.Error())
 		return
 	}
 
 	TokenID = fmt.Sprintf("%s", erc721transfer.TokenId)
 
-	logger.InfoLog("-------getDataERC721  From[%s] , To[%s]  , TokenID[%d]", erc721transfer.From.Hex(), erc721transfer.To.Hex(), erc721transfer.TokenId.Int64())
+	logger.InfoLog("GetDataERC721  From[%s] , To[%s]  , TokenID[%d]", erc721transfer.From.Hex(), erc721transfer.To.Hex(), erc721transfer.TokenId.Int64())
 
 	TokenURI, err = instance.TokenURI(&bind.CallOpts{}, erc721transfer.TokenId)
 	if err != nil {
-		logger.InfoLog("-------getDataERC721 Token URI : tokenid[%d] , error[%s] ", erc721transfer.TokenId.Int64(), err.Error())
+		logger.InfoLog("GetDataERC721 Token URI : tokenid[%d] , error[%s] ", erc721transfer.TokenId.Int64(), err.Error())
 		return
 	}
 
@@ -613,23 +567,24 @@ func GetImageFromDataApplicationJson(tokenuri, pathandfilename string) string {
 	return ""
 }
 
-func GetTokenURIData(tokenuri, tokenid, contractName string) {
+func GetTokenURIData(tokenuri, tokenid, contractName string) string {
 
 	replacer := strings.NewReplacer(" ", "_", ":", "", "?", "", "*", "", "<", "", ">", "", "|", "", "\"", "", "/", "")
 	contractNameFilter := replacer.Replace(contractName)
 
+	rtn := ""
 	if strings.Contains(tokenuri, "data:application/json") == true {
 
 		filename := fmt.Sprintf("%s_%s.svg", contractNameFilter, tokenid)
 		pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 		result := GetImageFromDataApplicationJson(tokenuri, pathandfilename)
 
-		tokeninfo.FileName = filename
+		rtn = filename
 
 		if result == "OK" {
 
 		} else {
-			logger.InfoLog("--------------------------getImageFromDataApplicationJson Not OK Transaction[%s] , Tokenuri[%s] , FileName[%s] , Error[%s]\n ", txhash, tokenuri, filename, err.Error())
+			logger.InfoLog("GetImageFromDataApplicationJson Result Not OK Tokenuri[%s] , FileName[%s] \n ", tokenuri, filename)
 		}
 
 	} else {
@@ -646,7 +601,7 @@ func GetTokenURIData(tokenuri, tokenid, contractName string) {
 			filename := fmt.Sprintf("%s_%s.png", contractNameFilter, tokenid)
 			pathandfilename := fmt.Sprintf("%s%s", IMAGE_PATH, filename)
 
-			tokeninfo.FileName = filename
+			rtn = filename
 
 			if strings.Contains(imageuri, "ipfs://") == true {
 				imageuri = strings.ReplaceAll(imageuri, "ipfs://", "https://ipfs.io/ipfs/")
@@ -654,18 +609,20 @@ func GetTokenURIData(tokenuri, tokenid, contractName string) {
 
 			if strings.Contains(imageuri, "ipfs") == true { /// 20220116 ipfs 에서 image 다운로드가 너무 오래걸린다  받아 지지도 않음 download pas
 
-				logger.InfoLog("------ipfs image url!! Transaction[%s] , Tokenuri[%s] FileName[%s] ,  ImageURL[%s]\n ", txhash, tokenuri, filename, imageuri)
+				logger.InfoLog("------ipfs image url!! Tokenuri[%s] FileName[%s] ,  ImageURL[%s]\n ", tokenuri, filename, imageuri)
 			} else {
 
 				err = downloadFile(imageuri, pathandfilename)
 				if err != nil {
-					logger.InfoLog("--------------------------downloadfile error Transaction[%s] , Image[%s] , FileName[%s] , Error[%s]\n ", txhash, imageuri, filename, err.Error())
+					logger.InfoLog("--------------------------downloadfile error Transaction[%s] , Image[%s] , FileName[%s] , Error[%s]\n ", imageuri, filename, err.Error())
 
 				}
 			}
 		}
 
 	}
+
+	return rtn
 
 }
 
