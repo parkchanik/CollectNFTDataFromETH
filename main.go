@@ -157,9 +157,9 @@ func main() {
 			// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
 			// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
 			// if txhash.Hex() != "0xf0179b678809acff8535ad89338bc7fa8a87d28cc10f07c7e595ef823b0e4690" {
-			if txhash.Hex() != "0x385c223e7183b5a0ed07edd5f72564f0df1874da428ffa1f325b4496cca631b6" {
-				continue
-			}
+			// if txhash.Hex() != "0x385c223e7183b5a0ed07edd5f72564f0df1874da428ffa1f325b4496cca631b6" {
+			// 	continue
+			// }
 
 			transferSigCount := 0
 			orderMatchSig := 0
