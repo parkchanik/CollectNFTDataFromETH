@@ -109,7 +109,7 @@ func main() {
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
 	var fromBlockNumber int64 = 13330090 //13347221
-	var toBlockNumber int64 = 13330190   //13347221
+	var toBlockNumber int64 = 13916166   //13347221
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -277,11 +277,13 @@ func main() {
 
 func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
-	var minETHValue int = 1000000000 // 10000000000000000000 가 10 ether 인데 10개 뺀다
+	var minETHValue int = 3000000000 // 10000000000000000000 가 10 ether 인데 10개 뺀다
 
 	address := "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b" //opensea Project Wyvern Exchange contract address
 
 	WyvernContractAddress := common.HexToAddress(address)
+
+	logApprovalSigHash := common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") // approval topic[0]
 
 	logOrderMatchedSigHash := common.HexToHash("0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9") // ordermatch  topic[0]
 
@@ -365,9 +367,16 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 				// transfer 함수가 없으면 패스 하는걸로 한다
 				// 첫번째 토픽 OrdersMatched 로그가 아니
 
+				//////////////////////
+				// ETH WETH 외에 다른 토큰으로도 거래가 가능하다
+				// https://etherscan.io/tx/0x734279e0043eb3583467c3ad46e8064d293867e9e9b25734a07dc3c22574b67b SAND토큰으로 거래한 예제
+				// https://etherscan.io/tx/0x113d7a881afa660fd063681022ee13560b7414731a0e1304fba71bc047d113e3 ETH 로만 거래한 예제
+				// https://etherscan.io/tx/0x9193b913d9041603b3311324ffd6ebd00f0efdf736f570bf1c73480b03e1a6fc WETH 로 거래 한 예제
+
 				orderMatchContractAddress := ""
 				for _, m := range rept.Logs {
-					if m.Topics[0] == logTransferSigHash && m.Address.String() != "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" { //WETH 주소 transfer 라면 transfer count  에 넣지 않는다
+
+					if m.Topics[0] == logTransferSigHash { //WETH 주소 transfer 라면 transfer count  에 넣지 않는다
 						transferSigCount = transferSigCount + 1
 					}
 
@@ -380,6 +389,28 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
 						orderMatchContractAddress = m.Address.Hex()
 					}
+
+				}
+
+				//  m.Address.String() != "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" WETH address
+
+				wantType := ""
+				// 첫번째 event log 가 뭐냐에 따라서 달라진다
+				// topic[0] =  0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925 Approval 이면 일반 ETH 거래
+				if rept.Logs[0].Topics[0] == logApprovalSigHash {
+					// type ETH
+					wantType = "ETH"
+				}
+
+				if rept.Logs[0].Topics[0] == logTransferSigHash { //
+
+					// topic[0] 이 logTransferSigHash 인데 그 주소가  WETH 라면
+					if rept.Logs[0].Address == common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") {
+						wantType = "WETH"
+					}
+				}
+
+				if wantType != "ETH" && wantType != "WETH" { // ETH 도 아니로 WETH 도 아니면 어쩔꺼냐
 
 				}
 
@@ -407,7 +438,11 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 				transferAlready := false
 				for _, z := range rept.Logs {
 
-					if z.Topics[0] == logTransferSigHash && transferAlready == false { //Transfer
+					if z.Address.String() == "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" {
+						fmt.Println("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2!!!!!!!!!!!!!!!!!!!!!!")
+					}
+
+					if z.Topics[0] == logTransferSigHash && !transferAlready && z.Address.String() != "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" { //Transfer //WETH 주소 transfer 라면 transfer  에 넣지 않는다
 
 						instance, err := erc721.NewErc721(z.Address, client)
 						if err != nil {
