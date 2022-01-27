@@ -367,7 +367,7 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
 				orderMatchContractAddress := ""
 				for _, m := range rept.Logs {
-					if m.Topics[0] == logTransferSigHash {
+					if m.Topics[0] == logTransferSigHash && m.Address.String() != "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" { //WETH 주소 transfer 라면 transfer count  에 넣지 않는다
 						transferSigCount = transferSigCount + 1
 					}
 
