@@ -3,4 +3,10 @@ solc --bin Store.sol
 ..\abigen --bin=output/ERC721/ERC721.bin --abi=output/ERC721/ERC721.abi --pkg=erc721 --out=output/ERC721/ERC721.go
 
 ..\abigen --bin=output/ERC1155/ERC1155.bin --abi=output/ERC1155/ERC1155.abi --pkg=erc1155 --out=output/ERC1155/ERC1155.go
+
+
+
+https://etherscan.io/address/0x7be8076f4ea4a4ad08075c2508e481d6c946d12b#code
+abi 를 얻어 와서 go로 만든다 
+..\abigen --abi=./wyvern/wyvern.abi --pkg=wyvern --out=output/WYVERN/WYVERN.go
  

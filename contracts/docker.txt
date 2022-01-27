@@ -5,3 +5,12 @@ docker run -v F:/WorkSpacePrivate/eth/ETHGetData/CollectTransactionInfo/contract
 
 
 docker run -v F:/WorkSpacePrivate/eth/ETHGetData/CollectTransactionInfo/contracts:/sources ethereum/solc:stable -o /sources/output/ERC1155 --abi --bin /sources/token/ERC1155/ERC1155.sol
+
+
+
+
+docker run -v F:/WorkSpacePrivate/blockchain/CollectNFTDataFromETH/contracts:/sources ethereum/solc:0.4.13 -o /sources/output/WYVERN --abi --bin /sources/wyvern/wyvern.sol
+
+
+
+docker run -v F:/WorkSpacePrivate/blockchain/CollectNFTDataFromETH/contracts:/sources ethereum/solc:0.4.23 -o /sources/output/WYVERN --abi --bin /sources/wyvern/wyvern.sol

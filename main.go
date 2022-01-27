@@ -35,6 +35,8 @@ import (
 
 	erc721 "CollectNFTDataETH/contracts/output/ERC721"
 
+	wyvern "CollectNFTDataETH/contracts/output/WYVERN"
+
 	//erc1155 "ETHCollectTrans/contracts/output/ERC1155"
 
 	. "CollectNFTDataETH/types"
@@ -139,14 +141,25 @@ func main() {
 	}
 
 	for _, m := range logs { // address wklay log
-		jsondata, err := m.MarshalJSON()
+
+		wyverninstance, err := wyvern.NewWyvern(m.Address, client)
 		if err != nil {
-			fmt.Println("err", err.Error())
+			logger.InfoLog("------Error NewWyvern TxHash[%s] , err[%s]\n", m.TxHash.Hex(), err.Error())
+			continue
 		}
 
-		fmt.Println("m.Data ", string(m.Data))
+		wyverOrdersMatch, err := wyverninstance.ParseOrdersMatched(m)
+		if err != nil {
+			logger.InfoLog("------Error NewWyvern ParseOrdersMatched TxHash[%s] , err[%s]\n", m.TxHash.Hex(), err.Error())
+			continue
 
-		fmt.Println("jsondata : ", string(jsondata))
+		}
+
+		// wyverOrdersMatch.Price.Int64() 로 하면 특정 수를 넘어 가면 overflow 가 나서 이상한 값으로 오는 듯 하다
+		//OrdersMatched Price TxHash[0xeb3a9351c34094fc568d2b25946b724d32b7cf8679509d33c7385a4c2edcd04c] , PriceInt[9106511852580896768]  ,PriceStringp[46000000000000000000]
+		// 46000000000000000000 -> 46 ether
+		logger.InfoLog("------OrdersMatched Price TxHash[%s] , PriceInt[%d]  ,PriceStringp[%s] Len[%d]\n", m.TxHash.Hex(), wyverOrdersMatch.Price.Int64(), wyverOrdersMatch.Price.String(), len(wyverOrdersMatch.Price.String()))
+
 	}
 
 	//-----------------------------------------------------------------------------------------------------원본
