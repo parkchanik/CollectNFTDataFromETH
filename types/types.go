@@ -52,3 +52,14 @@ type TokenMetaDataBase64 struct {
 		Value     interface{} `json:"value"`
 	} `json:"attributes"`
 }
+
+type TokenInfoNew struct {
+	TransactionHash common.Hash
+	BlockTime       string
+	Contractaddress common.Address
+	ContractName    string
+	Symbol          string
+	TokenID         string
+	ETHValue        string
+	TransferSigCnt  int
+}
