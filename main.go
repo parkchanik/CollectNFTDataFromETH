@@ -35,6 +35,8 @@ import (
 	//"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/ethclient"
 
+	erc20 "CollectNFTDataETH/contracts/output/ERC20"
+
 	erc721 "CollectNFTDataETH/contracts/output/ERC721"
 
 	wyvern "CollectNFTDataETH/contracts/output/WYVERN"
@@ -108,8 +110,8 @@ func main() {
 	// block number 13330090 (Oct-01-2021 12:00:00 AM +UTC)
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
-	var fromBlockNumber int64 = 13330090 //13347221
-	var toBlockNumber int64 = 13916166   //13347221
+	var fromBlockNumber int64 = 13330134 //13347221
+	var toBlockNumber int64 = 13331034   //13347221
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -126,153 +128,6 @@ func main() {
 
 	}
 
-	//-----------------------------------------------------------------------------------------------------원본
-	//var minETHValue int64 = 8000000000000000000
-	//var minETHValue int64 = 0
-
-	// i := fromBlockNumber
-
-	// for i <= toBlockNumber {
-
-	// 	logger.InfoLog("----- Block Num :  %d , Time : %s", i, time.Now())
-
-	// 	blockNum := big.NewInt(i)
-
-	// 	block, err := client.BlockByNumber(context.Background(), blockNum)
-	// 	if err != nil {
-	// 		logger.InfoLog("!!!!!!!!!!!!!!!!!!!!!!!!!!BlockByHash Hash Get Error BlockByNumber[%d] , err[%s]\n", blockNum.Int64(), err.Error())
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	blocktime := int64(block.Time())
-	// 	blocktimestring := time.Unix(blocktime, 0).Format("2006-01-02 15:04:05")
-
-	// 	for _, txs := range block.Transactions() {
-
-	// 		//			etherint64 := txs.Value().Int64()
-
-	// 		etherString := txs.Value().String()
-	// 		//  46000000000000000000 이게 46 ether 다
-
-	// 		if len(etherString) < 20 {
-	// 			fmt.Println("18181818 ", txs.Hash(), len(etherString), etherString)
-	// 			continue
-	// 		}
-
-	// 		// if etherint64 < minETHValue {
-	// 		// 	continue
-	// 		// }
-
-	// 		txhash := txs.Hash()
-	// 		// 해당 트랜잭션의 영수증
-	// 		rept, err := client.TransactionReceipt(context.Background(), txhash)
-	// 		if err != nil {
-	// 			logger.InfoLog("!!!!!!!!!!!!!!!!!!!!!!!!!!TransactionReceiptt Error vLog.TxHash[%s] , err[%s]\n", txhash, err.Error())
-	// 			continue
-	// 		}
-
-	// 		if len(rept.Logs) == 0 { //event log 가없으면 일반 거래일것이다
-	// 			continue
-	// 		}
-
-	// 		// 아래는 테스트 트랜잭션만 처리 하기 위해 추가
-	// 		// 0x7c5125feedc5cf4dd447bde160a6e13a089c1a0ac5431267c5eabcc7321d1ca0 -- erc1155
-	// 		// 0xa8f5f098526f577d544f874bed744ec84b7eada669836a18cb82e4540e436b10 -- erc721
-	// 		// if txhash.Hex() != "0xf0179b678809acff8535ad89338bc7fa8a87d28cc10f07c7e595ef823b0e4690" {
-	// 		if txhash.Hex() != "0xeb3a9351c34094fc568d2b25946b724d32b7cf8679509d33c7385a4c2edcd04c" {
-	// 			continue
-	// 		}
-
-	// 		fmt.Println("eeeeeeeeeeeeeeeeeth string ", etherString)
-
-	// 		transferSigCount := 0
-	// 		orderMatchSig := 0
-	// 		transferSingleSigCount := 0
-	// 		//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer
-	// 		// transfer 함수가 없으면 패스 하는걸로 한다
-	// 		// 첫번째 토픽 OrdersMatched 로그가 아니
-
-	// 		orderMatchContractAddress := ""
-	// 		for _, m := range rept.Logs {
-	// 			if m.Topics[0] == logTransferSigHash {
-	// 				transferSigCount = transferSigCount + 1
-	// 			}
-
-	// 			if m.Topics[0] == logTransferSingleSigHash {
-	// 				transferSingleSigCount = transferSingleSigCount + 1
-	// 			}
-
-	// 			if m.Topics[0] == logOrderMatchedSigHash {
-	// 				orderMatchSig = orderMatchSig + 1
-
-	// 				orderMatchContractAddress = m.Address.Hex()
-	// 			}
-
-	// 		}
-
-	// 		// 아래와 같은 경우가있었으니 나중에 참고
-	// 		// 			!!!!!!!!!!transferSigCount[2] , transferSingleSigCount[0] ,  orderMatchSig[0] txs.Hash[0xfbf1f28b04325a4ade7edbe3efcf7a85f8f4a58da4c201b0527f65bc07f76323]
-
-	// 		// !!!!!!!!!!transferSigCount[2] , transferSingleSigCount[0] ,  orderMatchSig[0] txs.Hash[0x243a5b11e99e1edfc25065dd3f0aa0230a62fcb40ed1bcfbc57fea429f29967a]
-
-	// 		// !!!!!!!!!!transferSigCount[2] , transferSingleSigCount[0] ,  orderMatchSig[0] txs.Hash[0x3441db76d0221145ea77416fa91d5f2bf67d526e4eecc1c9451545d68da9f989]
-
-	// 		if orderMatchSig == 0 {
-	// 			//logger.InfoLog("!!!!!!!!!!|| orderMatchSig == 0 txs.Hash[%s]\n", txhash)
-	// 			continue
-	// 		}
-
-	// 		if transferSigCount == 0 {
-	// 			logger.InfoLog("!!!!!transferSigCount ==0 Not ERC-721 pass !! transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, txhash)
-	// 			continue
-	// 		}
-
-	// 		logger.InfoLog("--------------------------------------------------------------------------------------------------------\n")
-	// 		logger.InfoLog("!!!!!!!!!!transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] , orderMatchContractAddress[%s] , txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, orderMatchContractAddress, txhash)
-
-	// 		//////////////////////////////
-
-	// 		logdata := &LogData{}
-	// 		logdata.TransactionHash = txs.Hash()
-	// 		logdata.BlockTime = blocktimestring
-
-	// 		//logdata.EtherValue = etherint64
-
-	// 		PrintTrxData(logdata)
-
-	// 		for _, z := range rept.Logs {
-	// 			if z.Topics[0] == logTransferSigHash { //Transfer
-
-	// 				contractAddr, name, symbol, tokenid, err := GetERC721Data(*z)
-	// 				if err != nil {
-	// 					logger.InfoLog("-------Error--getDataERC721 txs.Hash[%s] , error[%s] ", txhash, err.Error())
-	// 					continue
-	// 				}
-
-	// 				tokeninfo := &TokenInfo{}
-
-	// 				tokeninfo.TransactionHash = txs.Hash()
-	// 				tokeninfo.Contractaddress = contractAddr
-
-	// 				tokeninfo.ContractName = name
-
-	// 				tokeninfo.Symbol = symbol
-
-	// 				tokeninfo.TokenID = tokenid
-
-	// 				PrintTokenData(tokeninfo)
-	// 				//replacer := strings.NewReplacer(" ", "_", ":", "", "?", "", "*", "", "<", "", ">", "", "|", "", "\"", "", "/", "")
-	// 				//contractNameFilter := replacer.Replace(tokeninfo.ContractName)
-
-	// 			}
-	// 		}
-
-	// 	}
-
-	// 	i = i + 1
-
-	// }
-
 }
 
 func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
@@ -283,7 +138,7 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
 	WyvernContractAddress := common.HexToAddress(address)
 
-	logApprovalSigHash := common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") // approval topic[0]
+	//logApprovalSigHash := common.HexToHash("0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") // approval topic[0]
 
 	logOrderMatchedSigHash := common.HexToHash("0xc4109843e0b7d514e4c093114b863f8e7d8d9a458c372cd51bfe526b588006c9") // ordermatch  topic[0]
 
@@ -315,13 +170,13 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
 			wyverninstance, err := wyvern.NewWyvern(m.Address, client)
 			if err != nil {
-				logger.InfoLog("------Error NewWyvern TxHash[%s] , err[%s]\n", m.TxHash.Hex(), err.Error())
+				logger.InfoLog("-------------------Error NewWyvern TxHash[%s] , err[%s]\n", m.TxHash.Hex(), err.Error())
 				continue
 			}
 
 			wyverOrdersMatch, err := wyverninstance.ParseOrdersMatched(m)
 			if err != nil {
-				logger.InfoLog("------Error NewWyvern ParseOrdersMatched TxHash[%s] , err[%s]\n", m.TxHash.Hex(), err.Error())
+				logger.InfoLog("-------------------Error NewWyvern ParseOrdersMatched TxHash[%s] , err[%s]\n", m.TxHash.Hex(), err.Error())
 				continue
 
 			}
@@ -337,6 +192,8 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 			if ETHint >= minETHValue {
 				//특정 eth 이상만 체크
 
+				logger.InfoLog("--------------------------------------------------------------------------------------------------------\n")
+				logger.InfoLog("-------Order Match Value than %d -------------------ETHint >= minETHValue-------------------\n", minETHValue)
 				blocknum := m.BlockNumber
 				blocknumNew := big.NewInt(int64(blocknum))
 
@@ -350,13 +207,25 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
 				}
 
+				coinType := ""
+
+				transaction := block.Transaction(txhash)
+
+				trxValue := transaction.Value().String()
+
+				logger.InfoLog("block Trx Value  TxHash[%s] trxValue[%s]\n", txhash, trxValue)
+
+				if trxValue != "0" { // 트랜잭션 value 에 값이 있으면 ETH로 거래 한 내용이라고 처리
+					coinType = "ETH"
+				}
+
 				blocktime := int64(block.Time())
 				blocktimestring := time.Unix(blocktime, 0).Format("2006-01-02 15:04:05")
 
 				// 해당 트랜잭션의 영수증
 				rept, err := client.TransactionReceipt(context.Background(), txhash)
 				if err != nil {
-					logger.InfoLog("!!!!!!!!!!!!!!!!!!!!!!!!!!TransactionReceiptt Error vLog.TxHash[%s] , err[%s]\n", txhash, err.Error())
+					logger.InfoLog("!!!!TransactionReceiptt Error vLog.TxHash[%s] , err[%s]\n", txhash, err.Error())
 					continue
 				}
 
@@ -372,6 +241,8 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 				// https://etherscan.io/tx/0x734279e0043eb3583467c3ad46e8064d293867e9e9b25734a07dc3c22574b67b SAND토큰으로 거래한 예제
 				// https://etherscan.io/tx/0x113d7a881afa660fd063681022ee13560b7414731a0e1304fba71bc047d113e3 ETH 로만 거래한 예제
 				// https://etherscan.io/tx/0x9193b913d9041603b3311324ffd6ebd00f0efdf736f570bf1c73480b03e1a6fc WETH 로 거래 한 예제
+
+				// https://etherscan.io/tx/0xacd9ec7f7ea4630dded33752ce6bf18c6be3ff1cd560c261b5665ec9f0332f89 ETH 거래 인데 transfer 가 이상한 애들은 따 로처리 해야 할듯
 
 				orderMatchContractAddress := ""
 				for _, m := range rept.Logs {
@@ -392,28 +263,6 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
 				}
 
-				//  m.Address.String() != "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" WETH address
-
-				wantType := ""
-				// 첫번째 event log 가 뭐냐에 따라서 달라진다
-				// topic[0] =  0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925 Approval 이면 일반 ETH 거래
-				if rept.Logs[0].Topics[0] == logApprovalSigHash {
-					// type ETH
-					wantType = "ETH"
-				}
-
-				if rept.Logs[0].Topics[0] == logTransferSigHash { //
-
-					// topic[0] 이 logTransferSigHash 인데 그 주소가  WETH 라면
-					if rept.Logs[0].Address == common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") {
-						wantType = "WETH"
-					}
-				}
-
-				if wantType != "ETH" && wantType != "WETH" { // ETH 도 아니로 WETH 도 아니면 어쩔꺼냐
-
-				}
-
 				// 아래와 같은 경우가있었으니 나중에 참고
 				// 			!!!!!!!!!!transferSigCount[2] , transferSingleSigCount[0] ,  orderMatchSig[0] txs.Hash[0xfbf1f28b04325a4ade7edbe3efcf7a85f8f4a58da4c201b0527f65bc07f76323]
 
@@ -426,77 +275,147 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 					continue
 				}
 
-				if transferSigCount == 0 {
-					logger.InfoLog("!!!!!transferSigCount ==0 Not ERC-721 pass !! transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, txhash)
+				//if transferSigCount == 0 {
+				if transferSingleSigCount > 0 {
+					logger.InfoLog("!!!!!!!!!!!!transferSigCount ==0 Not ERC-721 pass !! transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, txhash)
 					continue
 				}
 
-				logger.InfoLog("--------------------------------------------------------------------------------------------------------\n")
-				logger.InfoLog("!!!!!!!!!!transferSigCount[%d] , transferSingleSigCount[%d] ,  orderMatchSig[%d] , orderMatchContractAddress[%s] , txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, orderMatchContractAddress, txhash)
-				logger.InfoLog("------OrdersMatched Price TxHash[%s] BlockTime[%s] PriceInt[%d] PriceString[%s] ETHLast[%s] Len[%d]\n", m.TxHash.Hex(), blocktimestring, wyverOrdersMatch.Price.Int64(), wyverOrdersMatch.Price.String(), ETHLast, len(wyverOrdersMatch.Price.String()))
+				logger.InfoLog("--transferSigCount[%d] transferSingleSigCount[%d] orderMatchSig[%d] orderMatchContractAddress[%s] txs.Hash[%s]\n", transferSigCount, transferSingleSigCount, orderMatchSig, orderMatchContractAddress, txhash)
+
+				//  m.Address.String() != "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" WETH address
+
+				var tokenAddress common.Address
+				tokenName := ""
+				tokenSymbol := ""
+				// 첫번째 event log 가 뭐냐에 따라서 달라진다
+				// topic[0] =  0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925 Approval 이면 일반 ETH 거래
+				//꼭 첫 log 가 approval 이 아니더라도 ETH 거래인경우가 있더라 Transaction 에서 체크 한다 주석처리
+				// if rept.Logs[0].Topics[0] == logApprovalSigHash {
+				// 	// type ETH
+				// 	coinType = "ETH"
+				// }
+
+				if coinType == "ETH" {
+
+					tokenName = coinType
+					tokenSymbol = coinType
+
+				} else { // 타입이 ETH가 아니면 첫 transfer 에 token 정보를 읽는다
+					if rept.Logs[0].Topics[0] == logTransferSigHash { //
+
+						// topic[0] 이 logTransferSigHash 인데 그 주소가  WETH 라면
+						// if rept.Logs[0].Address == common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2") {
+						// 	coinType = "WETH"
+						// }
+
+						erc20, err := erc20.NewErc20(rept.Logs[0].Address, client)
+						if err != nil {
+							logger.InfoLog("!!! NewErc20 Error vLog.TxHash[%s] ,rept.Logs[0].Address[%s] err[%s]\n", txhash, rept.Logs[0].Address.Hex(), err.Error())
+						}
+
+						tokenAddress = rept.Logs[0].Address
+
+						name, err := erc20.Name(&bind.CallOpts{})
+						if err != nil {
+							logger.InfoLog("!!! NewErc20 Name Error vLog.TxHash[%s] ,rept.Logs[0].Address[%s] err[%s]\n", txhash, rept.Logs[0].Address.Hash(), err.Error())
+						}
+
+						tokenName = name
+
+						symbol, err := erc20.Symbol(&bind.CallOpts{})
+						if err != nil {
+							logger.InfoLog("!!! NewErc20 Symbol Error vLog.TxHash[%s] ,rept.Logs[0].Address[%s] err[%s]\n", txhash, rept.Logs[0].Address.Hash(), err.Error())
+						}
+
+						coinType = "TOKEN"
+						tokenSymbol = symbol
+					}
+				}
+
+				if coinType == "" { // ETH 도 아니고 WETH 도 아니면 어쩔꺼냐
+					logger.InfoLog("-- CoinType is blank !!!! why ?? vLog.TxHash[%s] ,rept.Logs[0].Address[%s] err[%s]\n", txhash, rept.Logs[0].Address.Hash(), err.Error())
+				}
+
+				logger.InfoLog("-- OrdersMatched Price TxHash[%s] BlockTime[%s] CoinType[%s] TokenName[%s] TokenSymbol[%s] PriceInt[%d] PriceString[%s] ETHLast[%s] Len[%d]\n", m.TxHash.Hex(), blocktimestring, coinType, tokenName, tokenSymbol, wyverOrdersMatch.Price.Int64(), wyverOrdersMatch.Price.String(), ETHLast, len(wyverOrdersMatch.Price.String()))
 
 				transferAlready := false
+
+				contractName := ""
+				var contractAddress common.Address
+				contractSymbol := ""
+				var tokenID int64 = 0
+				var transferCountERC721 int = 0
 				for _, z := range rept.Logs {
 
-					if z.Address.String() == "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" {
-						fmt.Println("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2!!!!!!!!!!!!!!!!!!!!!!")
+					//Transfer //토큰 erc20 주소 transfer 라면 transfer 처리 하지 않는다
+					if z.Address == tokenAddress {
+						logger.InfoLog("-- z.Address != tokenAddress z.Address[%s] tokenAddress[%s]\n", z.Address.Hex(), tokenAddress.Hex())
+						continue
 					}
 
-					if z.Topics[0] == logTransferSigHash && !transferAlready && z.Address.String() != "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" { //Transfer //WETH 주소 transfer 라면 transfer  에 넣지 않는다
+					if z.Topics[0] == logTransferSigHash {
 
-						instance, err := erc721.NewErc721(z.Address, client)
-						if err != nil {
-							logger.InfoLog("----- Error GetDataERC721 NewErc721  error[%s] ", err.Error())
-							continue
+						if transferAlready == false { // erc721 의 첫 transfer 만 저장 한다 나머지는 카운트만 센다
+							instance, err := erc721.NewErc721(z.Address, client)
+							if err != nil {
+								logger.InfoLog("!!! Error GetDataERC721 NewErc721  error[%s] ", err.Error())
+								continue
+							}
+
+							name, err := instance.Name(&bind.CallOpts{})
+							if err != nil {
+								logger.InfoLog("!!! Error GetDataERC721 instance.Name error[%s] ", err.Error())
+
+							}
+
+							symbol, err := instance.Symbol(&bind.CallOpts{})
+							if err != nil {
+								logger.InfoLog("!!! Error GetDataERC721 instance.Symbol error[%s] ", err.Error())
+
+							}
+
+							//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer
+							erc721transfer, err := instance.ParseTransfer(*z)
+							if err != nil {
+								logger.InfoLog("!!! Error GetDataERC721 instance.ParseTransfer Log Addresss[%s] error[%s] ", z.Address.Hex(), err.Error())
+								continue
+							}
+
+							contractName = name
+							contractSymbol = symbol
+							tokenID = erc721transfer.TokenId.Int64()
+
+							contractAddress = z.Address
+
+							transferAlready = true
 						}
 
-						name, err := instance.Name(&bind.CallOpts{})
-						if err != nil {
-							logger.InfoLog("----- Error GetDataERC721 instance.Name error[%s] ", err.Error())
-
-						}
-
-						symbol, err := instance.Symbol(&bind.CallOpts{})
-						if err != nil {
-							logger.InfoLog("----- Error GetDataERC721 instance.Symbol error[%s] ", err.Error())
-
-						}
-
-						//0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef transfer
-						erc721transfer, err := instance.ParseTransfer(*z)
-						if err != nil {
-							logger.InfoLog("----- Error GetDataERC721 instance.ParseTransfer Maybe WETH Log Addresss[%s] error[%s] ", z.Address.Hex(), err.Error())
-							continue
-						}
-
-						cName := name
-						cSymbol := symbol
-						tokenID := erc721transfer.TokenId.Int64()
-
-						cAddress := z.Address
-
-						tokeninfo := &TokenInfoNew{}
-
-						tokeninfo.BlockTime = blocktimestring
-						tokeninfo.TransactionHash = txhash
-						tokeninfo.ContractName = cName
-						tokeninfo.Contractaddress = cAddress
-
-						tokenIDStr := fmt.Sprintf("%d", tokenID)
-						tokeninfo.ETHValue = ETHLast
-						tokeninfo.Symbol = cSymbol
-
-						tokeninfo.TokenID = tokenIDStr
-						tokeninfo.TransferSigCnt = transferSigCount
-						//transferSigCount
-						PrintTokenDataNew(tokeninfo)
-
-						transferAlready = true
-						//replacer := strings.NewReplacer(" ", "_", ":", "", "?", "", "*", "", "<", "", ">", "", "|", "", "\"", "", "/", "")
-						//contractNameFilter := replacer.Replace(tokeninfo.ContractName)
+						transferCountERC721 = transferCountERC721 + 1
 
 					}
 				}
+
+				tokeninfo := &TokenInfoNew{}
+
+				tokeninfo.BlockTime = blocktimestring
+				tokeninfo.TransactionHash = txhash
+				tokeninfo.ContractName = contractName
+				tokeninfo.Contractaddress = contractAddress
+				tokeninfo.ContractSymbol = contractSymbol
+
+				tokeninfo.CoinType = coinType
+				tokeninfo.Tokenaddress = tokenAddress
+				tokeninfo.TokenName = tokenName
+				tokeninfo.TokenSymbol = tokenSymbol
+
+				tokenIDStr := fmt.Sprintf("%d", tokenID)
+				tokeninfo.Value = ETHLast
+
+				tokeninfo.TokenID = tokenIDStr
+				tokeninfo.TransferCountERC721 = transferCountERC721
+				//transferSigCount
+				PrintTokenDataNew(tokeninfo)
 
 			}
 
@@ -542,10 +461,16 @@ func PrintTokenDataNew(logdata *TokenInfoNew) {
 	blockTime := logdata.BlockTime[:10]
 	contractAddress := logdata.Contractaddress.Hex()
 	contractName := logdata.ContractName
-	contractSymbol := logdata.Symbol
+	contractSymbol := logdata.ContractSymbol
 	tokenID := logdata.TokenID
-	ETHValue := logdata.ETHValue //float64
-	transferSigCnt := strconv.Itoa(logdata.TransferSigCnt)
+	ETHValue := logdata.Value //float64
+
+	transferCountERC721 := strconv.Itoa(logdata.TransferCountERC721)
+
+	coinType := logdata.CoinType
+	tokenAddress := logdata.Tokenaddress.Hex()
+	tokenName := logdata.TokenName
+	tokenSymbol := logdata.TokenSymbol
 
 	var b bytes.Buffer
 
@@ -561,9 +486,17 @@ func PrintTokenDataNew(logdata *TokenInfoNew) {
 	b.WriteString(",")
 	b.WriteString(tokenID)
 	b.WriteString(",")
+	b.WriteString(coinType)
+	b.WriteString(",")
+	b.WriteString(tokenAddress)
+	b.WriteString(",")
+	b.WriteString(tokenName)
+	b.WriteString(",")
+	b.WriteString(tokenSymbol)
+	b.WriteString(",")
 	b.WriteString(ETHValue)
 	b.WriteString(",")
-	b.WriteString(transferSigCnt)
+	b.WriteString(transferCountERC721)
 
 	logger.TokenLog(b.String())
 

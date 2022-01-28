@@ -1,6 +1,10 @@
 docker run -v D:/WorkSpace/20.blockchain/EthGetData/contracts:/sources ethereum/solc:stable -o /sources/output --abi --bin /sources/ERC721.sol
 
 
+
+docker run -v F:/WorkSpacePrivate/blockchain/CollectNFTDataFromETH/contracts:/sources ethereum/solc:stable -o /sources/output/ERC20 --abi --bin /sources/token/ERC20/ERC20.sol
+
+
 docker run -v F:/WorkSpacePrivate/eth/ETHGetData/CollectTransactionInfo/contracts:/sources ethereum/solc:stable -o /sources/output/ERC721 --abi --bin /sources/token/ERC721/ERC721.sol
 
 

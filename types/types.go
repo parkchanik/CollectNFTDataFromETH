@@ -54,12 +54,16 @@ type TokenMetaDataBase64 struct {
 }
 
 type TokenInfoNew struct {
-	TransactionHash common.Hash
-	BlockTime       string
-	Contractaddress common.Address
-	ContractName    string
-	Symbol          string
-	TokenID         string
-	ETHValue        string
-	TransferSigCnt  int
+	TransactionHash     common.Hash
+	BlockTime           string
+	Contractaddress     common.Address
+	ContractName        string
+	ContractSymbol      string
+	TokenID             string
+	CoinType            string
+	Tokenaddress        common.Address
+	TokenName           string
+	TokenSymbol         string
+	Value               string
+	TransferCountERC721 int
 }
