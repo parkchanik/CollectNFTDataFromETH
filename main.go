@@ -110,8 +110,10 @@ func main() {
 	// block number 13330090 (Oct-01-2021 12:00:00 AM +UTC)
 	// block number 13330089 (Sep-30-2021 11:59:56 PM +UTC)
 
-	var fromBlockNumber int64 = 13330134 //13347221
-	var toBlockNumber int64 = 13331034   //13347221
+	// block number 12936340 (Aug-01-2021 12:00:17 AM +UTC)
+
+	var fromBlockNumber int64 = 12936340 //13347221
+	var toBlockNumber int64 = 13330190   //13347221
 
 	if *fromNum != 0 {
 		fromBlockNumber = *fromNum
@@ -132,7 +134,7 @@ func main() {
 
 func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 
-	var minETHValue int = 3000000000 // 10000000000000000000 가 10 ether 인데 10개 뺀다
+	var minETHValue int = 2000000000 // 10000000000000000000 가 10 ether 인데 10개 뺀다
 
 	address := "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b" //opensea Project Wyvern Exchange contract address
 
@@ -334,7 +336,7 @@ func CollectTrxProcess(fromBlockNumber, toBlockNumber int64) {
 				}
 
 				if coinType == "" { // ETH 도 아니고 WETH 도 아니면 어쩔꺼냐
-					logger.InfoLog("-- CoinType is blank !!!! why ?? vLog.TxHash[%s] ,rept.Logs[0].Address[%s] err[%s]\n", txhash, rept.Logs[0].Address.Hash(), err.Error())
+					logger.InfoLog("------CoinType is blank !!!! why ?? vLog.TxHash[%s] ,rept.Logs[0].Address[%s]\n", txhash, rept.Logs[0].Address.Hash())
 				}
 
 				logger.InfoLog("-- OrdersMatched Price TxHash[%s] BlockTime[%s] CoinType[%s] TokenName[%s] TokenSymbol[%s] PriceInt[%d] PriceString[%s] ETHLast[%s] Len[%d]\n", m.TxHash.Hex(), blocktimestring, coinType, tokenName, tokenSymbol, wyverOrdersMatch.Price.Int64(), wyverOrdersMatch.Price.String(), ETHLast, len(wyverOrdersMatch.Price.String()))
